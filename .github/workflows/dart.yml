@@ -1,11 +1,7 @@
-
-      # Your project will need to have tests in test/ and a dependency on
-      # package:test for this step toname: 🍎 Build Flutter APK
+name: Build Flutter APK
 
 on:
   push:
-    branches: ["main", "master"]
-  pull_request:
     branches: ["main", "master"]
   workflow_dispatch:
 
@@ -14,43 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Set up Java (for Android)
-      - name: Setup JDK
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
           distribution: temurin
+          java-version: "17"
           cache: gradle
 
-      # Set up Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
+          channel: stable
           cache: true
 
-      # Flutter doctor (optional debug)
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      # Get dependencies
-      - name: Pub Get
+      - name: Flutter Pub Get
         run: flutter pub get
 
-      # Build Release APK
-      - name: Build APK
-        run: flutter build apk --release --no-shrink
+      - name: Fix Gradle Memory
+        run: echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> android/gradle.properties
 
-      # Upload APK
-      - name: Upload Artifact
+      - name: Build APK
+        run: flutter build apk --release --no-tree-shake-icons --verbose
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk succeed. Note that Flutter projects will
-      # want to change this to 'flutter test'.
-      - name: Run tests
-        run: dart test
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
